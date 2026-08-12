@@ -4,9 +4,9 @@ pipeline {
             label 'ROBOSHOP' 
         } 
     }
-    /* environment {
-        COURSE = "Jenkins"
-    } */
+    environment {
+        def appVersion = ""
+    }
     options {
         disableConcurrentBuilds()
         timeout(time: 15, unit: 'MINUTES')
@@ -25,7 +25,7 @@ pipeline {
                 script {
                     def packageJson = readJSON file: 'package.json'
                     // Extract the version property
-                    def appVersion = packageJson.version
+                    appVersion = packageJson.version
                     echo "The application version is: ${appVersion}"
                 }
             }
