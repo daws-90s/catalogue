@@ -118,6 +118,29 @@ pipeline {
                 }
             }
         }
+        stage('Trivy Scan') {
+            steps {
+                script {
+                    def dockerfileScan = sh(
+                        script: """
+                            trivy config --exit-code 1 --severity HIGH,CRITICAL --format table ./Dockerfile
+                        """,
+                        returnStatus: true
+                    )
+
+                    def imageScan = sh(
+                        script: """
+                            trivy image --scanners vuln --pkg-types os --exit-code 1 --severity HIGH,CRITICAL --format table ${IMAGE_NAME}:${IMAGE_TAG}
+                        """,
+                        returnStatus: true
+                    )
+
+                    if (dockerfileScan != 0 || imageScan != 0) {
+                        error "Trivy found HIGH/CRITICAL issues in Dockerfile and/or OS packages. Failing pipeline."
+                    }
+                }
+            }
+        }
         stage('Deploy') {
             when {
                 // Evaluates the boolean parameter directly
