@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: catalogue
+  namespace: {{ .Values.namespace }}
+data:
+  MONGO: "true"
+  MONGO_URL: {{ .Values.configmap.mongodbUrl }}
+
+

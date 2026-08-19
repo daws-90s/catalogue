@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalogue
+  namespace: {{ .Values.namespace }}
+  # servicer labels
+  labels:
+    project: roboshop
+    tier: backend
+    component: catalogue
+spec:
+  # Service uses the below labels to select the pods
+  selector:
+    project: roboshop
+    tier: backend
+    component: catalogue
+  ports:
+    - protocol: TCP
+      port: 8080 # service port
+      targetPort: 8080 # container port
