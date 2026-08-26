@@ -1,6 +1,8 @@
 name: feature workflow
 on:
   push:
+  workflow_dispatch:
+    
     # branches-ignore:
     #   - 'main'
 jobs:
