@@ -2,6 +2,28 @@ name: feature-workflow
 on:
   push:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        type: choice
+        options: [dev, sit, uat, prod]
+        default: dev
+      commit_id:
+        description: 'Commit SHA to promote (required for sit/uat/prod)'
+        required: false
+        default: ''
+      cr_number:
+        description: 'Change Request number (required for prod deploy)'
+        required: false
+        default: ''
+      version:
+        description: 'Release version to tag the commit with on a successful prod deploy, e.g. v1.4.0 (required for prod deploy)'
+        required: false
+        default: ''
+      issue_key:
+        description: 'Jira ticket key this run should update (set automatically by the dev run when it creates the ticket; leave blank for manual promotions with no Jira tracking)'
+        required: false
+        default: ''
 jobs:
   feature-workflow:
     if: github.ref_name != 'main'
@@ -15,8 +37,22 @@ jobs:
       statuses: write
     secrets: inherit
 
+  # mirrors nodejsEKSMain.groovy — auto-triggered on push to main (defaults to
+  # dev), or dispatched explicitly (by a human, or by Jira Automation calling
+  # this workflow_dispatch the same way it used to call Jenkins' GenericTrigger
+  # webhook) to promote an already-approved commit to sit/uat/prod.
   main-workflow:
-    runs-on:  ubuntu-latest
-    steps:
-      - name: main workflow
-        run: echo "this runs when a commit comes to main branch"
+    if: github.ref_name == 'main'
+    uses: daws-90s/workflows/.github/workflows/nodejs-eks-main.yaml@main
+    with:
+      project: roboshop
+      component: catalogue
+      environment: ${{ inputs.environment || 'dev' }}
+      commit_id: ${{ inputs.commit_id }}
+      cr_number: ${{ inputs.cr_number }}
+      version: ${{ inputs.version }}
+      issue_key: ${{ inputs.issue_key }}
+    permissions:
+      contents: write
+      statuses: write
+    secrets: inherit
